@@ -1,3 +1,84 @@
-pool: MyAgentPool
-steps:
-- bash: echo hello world
+trigger:
+- main
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  buildConfiguration: 'Release'
+  resourceGroup: 'az-400'
+  webAppName: 'web-app-spacegame-koyo'
+  serviceConnection: '52b9f645-f47f-43f4-8ce8-c842a11ba7df'
+
+stages:
+- stage: DeployInfrastructure
+  displayName: 'Deploy Infrastructure'
+  jobs:
+  - job: DeployARM
+    steps:
+    - task: AzureResourceManagerTemplateDeployment@3
+      inputs:
+        deploymentScope: 'Resource Group'
+        azureResourceManagerConnection: '$(serviceConnection)'
+        action: 'Create Or Update Resource Group'
+        resourceGroupName: '$(resourceGroup)'
+        location: 'France Central'
+        templateLocation: 'Linked artifact'
+        csmFile: '$(Build.SourcesDirectory)/web-app.json'
+        overrideParameters: '-webAppName $(webAppName)'
+        deploymentMode: 'Incremental'
+
+- stage: Build
+  displayName: 'Build Application'
+  dependsOn: DeployInfrastructure
+  jobs:
+  - job: Build
+    steps:
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '6.x'
+        installationPath: $(Agent.ToolsDirectory)/dotnet
+
+    - task: NuGetCommand@2
+      inputs:
+        restoreSolution: '**/*.sln'
+
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'build'
+        arguments: '--configuration $(buildConfiguration)'
+        projects: '**/*.csproj'
+
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'publish'
+        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+        publishWebProjects: true
+
+    # Changed: Removed ArchiveFiles task and updated PublishBuildArtifacts
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+
+- stage: Deploy
+  displayName: 'Deploy Application'
+  dependsOn: Build
+  jobs:
+  - job: Deploy
+    steps:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: 'current'
+        artifactName: 'drop'
+        targetPath: '$(Pipeline.Workspace)/drop'
+      
+    - task: AzureWebApp@1
+      inputs:
+        azureSubscription: '$(serviceConnection)'
+        appType: 'webApp'
+        appName: '$(webAppName)'
+        package: '$(Pipeline.Workspace)/drop/Tailspin.SpaceGame.Web.zip'
+        runtimeStack: 'DOTNETCORE:6.0'
