@@ -1,6 +1,14 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
+    "parameters": {
+        "webAppName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the web app"
+            }
+        }
+    },
     "resources": [
         {
             "type": "Microsoft.Web/serverfarms",
@@ -16,13 +24,13 @@
             },
             "properties": {
                 "perSiteScaling": false,
-                "reserved": false // Windows
+                "reserved": false
             }
         },
         {
             "type": "Microsoft.Web/sites",
             "apiVersion": "2021-02-01",
-            "name": "web-app-spacegame-koyo",
+            "name": "[parameters('webAppName')]",
             "location": "[resourceGroup().location]",
             "properties": {
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', 'asp-spacegame-koyo')]",
@@ -38,7 +46,7 @@
                 },
                 "clientAffinityEnabled": false,
                 "httpsOnly": true,
-                "reserved": false // Windows
+                "reserved": false
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', 'asp-spacegame-koyo')]"
@@ -46,4 +54,3 @@
         }
     ]
 }
-
