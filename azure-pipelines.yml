@@ -12,21 +12,21 @@ variables:
 
 stages:
 
-#- stage: ValidateARM
-#  displayName: 'Validate ARM Template'
-#  jobs:
-#  - job: Validate
-#    steps:
-#    - task: AzureResourceGroupDeployment@2
-#      inputs:
-#        azureSubscription: '$(serviceConnection)'
-#        action: 'Create Or Update Resource Group'
-#        resourceGroupName: '$(resourceGroup)'
-#        location: 'France Central'
-#        templateLocation: 'Linked artifact'
-#        csmFile: '$(Build.SourcesDirectory)/web-app.json'
-#        overrideParameters:  '-webAppName $(webAppName)'
-#       deploymentMode: 'Validation'  # Validate the ARM template
+- stage: ValidateARM
+  displayName: 'Validate ARM Template'
+  jobs:
+  - job: Validate
+    steps:
+    - task: AzureResourceGroupDeployment@2
+      inputs:
+        azureSubscription: '$(serviceConnection)'
+        action: 'Create Or Update Resource Group'
+        resourceGroupName: '$(resourceGroup)'
+        location: 'France Central'
+        templateLocation: 'Linked artifact'
+        csmFile: '$(Build.SourcesDirectory)/web-app.json'
+        overrideParameters:  '-webAppName $(webAppName)'
+        deploymentMode: 'Validation'  # Validate the ARM template
 
 
 - stage: DeployInfrastructure
