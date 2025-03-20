@@ -10,6 +10,7 @@ variables:
   resourceGroup: 'az-400'
   webAppName: 'web-app-spacegame-koyo'
   serviceConnection: '52b9f645-f47f-43f4-8ce8-c842a11ba7df'
+  AZURE_SUBSCRIPTION_ID: 'da1d03b9-3b84-491e-968d-9668e1385ca0'
 
 stages:
 
