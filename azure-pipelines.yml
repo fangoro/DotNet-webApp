@@ -88,7 +88,7 @@ stages:
   - job: CheckAlerts
     pool: server  # Agentless job for InvokeRESTAPI
     steps:
-    - task: InvokeRESTAPI@2
+    - task: InvokeRESTAPI@1
       inputs:
         connectionType: 'connectedServiceName'
         serviceConnection: '$(serviceConnection)'
