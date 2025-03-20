@@ -110,7 +110,7 @@ stages:
               successCriteria: '$.value[?(@.properties.condition.allOf[0].metricValue > 75)].length == 0'
             name: 'CheckAlerts'
 
-          - task: AzureWebApp@1
+          - task: AzureWebApp@2
             inputs:
               azureSubscription: '$(serviceConnection)'
               appType: 'webApp'
