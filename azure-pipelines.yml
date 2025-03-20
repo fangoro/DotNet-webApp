@@ -104,7 +104,7 @@ stages:
               serviceConnection: '$(serviceConnection)'
               method: 'GET'
               headers: '{"Content-Type":"application/json"}'
-              url: 'https://management.azure.com/subscriptions/$(AZURE_SUBSCRIPTION_ID)/resourceGroups/$(resourceGroup)/providers/Microsoft.Insights/metricAlerts?api-version=2018-03-01'
+              url: 'https://management.azure.com/subscriptions/$(AZURE_SUBSCRIPTION_ID)/resourceGroups/$(resourceGroup)/providers/Microsoft.Insights/metricAlerts?api-version=2.0-preview.1'
               waitForCompletion: 'true'
               successCriteria: '$.value[?(@.properties.condition.allOf[0].metricValue > 75)].length == 0'
             name: 'CheckAlerts'
