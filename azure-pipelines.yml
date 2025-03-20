@@ -91,7 +91,7 @@ stages:
     - task: InvokeRESTAPI@1
       inputs:
         connectionType: 'connectedServiceName'
-        serviceConnection: '$(serviceConnection)'
+        serviceConnection: 'gensrv'
         method: 'GET'
         headers: '{"Content-Type":"application/json"}'
         url: 'https://management.azure.com/subscriptions/$(AZURE_SUBSCRIPTION_ID)/resourceGroups/$(resourceGroup)/providers/Microsoft.Insights/metricAlerts?api-version=2.0-preview.1'
