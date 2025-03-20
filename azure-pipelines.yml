@@ -1,0 +1,87 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  buildConfiguration: 'Release'
+  resourceGroup: 'az-400'
+  webAppName: 'web-app-spacegame-koyo'
+  serviceConnection: '52b9f645-f47f-43f4-8ce8-c842a11ba7df'
+
+stages:
+
+- stage: ValidateARM
+  displayName: 'Validate ARM Template'
+  jobs:
+  - job: Validate
+    steps:
+    - task: AzureResourceGroupDeployment@2
+      inputs:
+        azureSubscription: '$(serviceConnection)'
+        action: 'Create Or Update Resource Group'
+        resourceGroupName: '$(resourceGroup)'
+        location: 'France Central'
+        templateLocation: 'Linked artifact'
+        csmFile: '$(Build.SourcesDirectory)/web-app.json'
+        overrideParameters:  '-webAppName $(webAppName)'
+        deploymentMode: 'Validation'  # Validate the ARM template
+
+
+- stage: DeployInfrastructure
+  displayName: 'Deploy Infrastructure'
+  jobs:
+  - job: DeployARM
+    steps:
+    - task: AzureResourceManagerTemplateDeployment@3
+      inputs:
+        deploymentScope: 'Resource Group'
+        azureResourceManagerConnection: '$(serviceConnection)'
+        action: 'Create Or Update Resource Group'
+        resourceGroupName: '$(resourceGroup)'
+        location: 'France Central'
+        templateLocation: 'Linked artifact'
+        csmFile: '$(Build.SourcesDirectory)/web-app.json'
+        overrideParameters: '-webAppName $(webAppName)'
+        deploymentMode: 'Incremental'
+
+
+- stage: Build
+  displayName: 'Build Application'
+  dependsOn: DeployInfrastructure
+  jobs:
+  - job: Build
+    steps:
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '6.x'
+        installationPath: $(Agent.ToolsDirectory)/dotnet
+
+    - task: NuGetCommand@2
+      inputs:
+        restoreSolution: '**/*.sln'
+        
+    - task: WhiteSource@21
+      inputs:
+        cwd: '$(System.DefaultWorkingDirectory)'
+
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'build'
+        arguments: '--configuration $(buildConfiguration)'
+        projects: '**/*.csproj'
+
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'publish'
+        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+        publishWebProjects: true
+
+    # Changed: Removed ArchiveFiles task and updated PublishBuildArtifacts
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
