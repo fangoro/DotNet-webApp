@@ -90,7 +90,7 @@ stages:
     steps:
     - task: InvokeRESTAPI@1
       inputs:
-        connectionType: 'connectedServiceName'
+        connectionType: 'Generic'
         serviceConnection: 'gensrv'
         method: 'GET'
         headers: '{"Content-Type":"application/json"}'
