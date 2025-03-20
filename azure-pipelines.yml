@@ -99,7 +99,7 @@ stages:
               targetPath: '$(Pipeline.Workspace)/drop'
 
           # Deployment Gate: Check for Azure Monitor Alerts
-          - task: InvokeRESTAPI@1
+          - task: InvokeRESTAPI@2
             inputs:
               connectionType: 'connectedServiceName'
               serviceConnection: '$(serviceConnection)'
@@ -110,7 +110,7 @@ stages:
               successCriteria: '$.value[?(@.properties.condition.allOf[0].metricValue > 75)].length == 0'
             name: 'CheckAlerts'
 
-          - task: AzureWebApp@2
+          - task: AzureWebApp@1
             inputs:
               azureSubscription: '$(serviceConnection)'
               appType: 'webApp'
